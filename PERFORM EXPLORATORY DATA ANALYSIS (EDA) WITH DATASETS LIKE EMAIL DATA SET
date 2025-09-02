@@ -1,4 +1,4 @@
-Program:
+# Step 1: Import libraries
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,24 +7,26 @@ from wordcloud import WordCloud
 from sklearn.feature_extraction.text import CountVectorizer
 
 # Step 2: Load the dataset
-df = pd.read_csv(r'C:\Users\user\Downloads\spam.csv', encoding='latin-1')
+# Downloaded from Kaggle: https://www.kaggle.com/datasets/uciml/sms-spam-collection-dataset
+# The CSV has extra unnamed columns, so we'll drop them.
+df = pd.read_csv("https://raw.githubusercontent.com/justmarkham/DAT8/master/data/sms.tsv",
+                 sep="\t", names=["v1", "v2"])
 
 # Step 3: Understand the dataset structure
 print("First few rows of the dataset:")
-print(df.head())  # Display first 5 rows
+print(df.head())
 
 print("\nDataset information (columns, types, and non-null counts):")
-print(df.info())  # Check the data types, null values
+print(df.info())
 
 print("\nStatistical summary of the dataset:")
-print(df.describe())  # Get descriptive statistics
+print(df.describe())
 
 # Step 4: Check for null/missing values
 print("\nMissing values in each column:")
-print(df.isnull().sum())  # Check for missing values
+print(df.isnull().sum())
 
 # Step 5: Analyze class distribution (spam vs ham)
-# Explicitly assign 'v1' to the hue argument to avoid the FutureWarning
 plt.figure(figsize=(8, 6))
 sns.countplot(x='v1', data=df, hue='v1', palette='viridis', legend=False)
 plt.title('Class Distribution (Ham vs Spam)')
@@ -33,10 +35,8 @@ plt.ylabel('Count')
 plt.show()
 
 # Step 6: Visualize data distribution using plots
-# Adding a new column for message length
-df['message_length'] = df['v2'].apply(len)  # Assuming 'v2' contains the message text
+df['message_length'] = df['v2'].apply(len)
 
-# Plot the distribution of message lengths
 plt.figure(figsize=(10, 6))
 sns.histplot(df['message_length'], bins=50, kde=True, color='blue')
 plt.title('Distribution of Message Lengths')
@@ -55,11 +55,10 @@ print(f"Median message length: {median_length}")
 print(f"Standard deviation of message length: {std_length}")
 
 # 7b. Word frequency analysis (word clouds)
-# Split dataset into spam and ham messages
-spam_messages = df[df['v1'] == 'spam']['v2']  # 'v1' for label, 'v2' for message text
+spam_messages = df[df['v1'] == 'spam']['v2']
 ham_messages = df[df['v1'] == 'ham']['v2']
 
-# Create word cloud for spam messages
+# Spam WordCloud
 spam_wordcloud = WordCloud(width=800, height=400, background_color='white').generate(' '.join(spam_messages))
 plt.figure(figsize=(10, 6))
 plt.imshow(spam_wordcloud, interpolation='bilinear')
@@ -67,7 +66,7 @@ plt.title("Word Cloud for Spam Messages")
 plt.axis('off')
 plt.show()
 
-# Create word cloud for ham messages
+# Ham WordCloud
 ham_wordcloud = WordCloud(width=800, height=400, background_color='white').generate(' '.join(ham_messages))
 plt.figure(figsize=(10, 6))
 plt.imshow(ham_wordcloud, interpolation='bilinear')
@@ -75,106 +74,21 @@ plt.title("Word Cloud for Ham Messages")
 plt.axis('off')
 plt.show()
 
-# 7c. Word frequency analysis (top words)
+# 7c. Top words using CountVectorizer
 vectorizer = CountVectorizer(stop_words='english', max_features=10)
 
-# Get the most frequent words in spam messages
+# Spam
 spam_words = vectorizer.fit_transform(spam_messages).toarray()
 spam_word_freq = pd.DataFrame(spam_words, columns=vectorizer.get_feature_names_out()).sum(axis=0).sort_values(ascending=False)
 
-# Get the most frequent words in ham messages
+# Ham
 ham_words = vectorizer.fit_transform(ham_messages).toarray()
 ham_word_freq = pd.DataFrame(ham_words, columns=vectorizer.get_feature_names_out()).sum(axis=0).sort_values(ascending=False)
 
-# Display the top 10 frequent words in spam and ham
 print("\nTop 10 words in Spam messages:\n", spam_word_freq.head(10))
 print("\nTop 10 words in Ham messages:\n", ham_word_freq.head(10))
 
-# Step 8: Check correlations (if any)
-# Correlation between message length and whether it's spam or ham
+# Step 8: Correlation check
 df['is_spam'] = df['v1'].apply(lambda x: 1 if x == 'spam' else 0)
 correlation = df[['message_length', 'is_spam']].corr()
 print("\nCorrelation between message length and spam/ham:\n", correlation)
-
-
-Output:
-First few rows of the dataset:
-     v1  ... Unnamed: 4
-0   ham  ...        NaN
-1   ham  ...        NaN
-2  spam  ...        NaN
-3   ham  ...        NaN
-4   ham  ...        NaN
-
-[5 rows x 5 columns]
-
-Dataset information (columns, types, and non-null counts):
-<class 'pandas.core.frame.DataFrame'>
-RangeIndex: 5572 entries, 0 to 5571
-Data columns (total 5 columns):
- #   Column      Non-Null Count  Dtype 
----  ------      --------------  ----- 
- 0   v1          5572 non-null   object
- 1   v2          5572 non-null   object
- 2   Unnamed: 2  50 non-null     object
- 3   Unnamed: 3  12 non-null     object
- 4   Unnamed: 4  6 non-null      object
-dtypes: object(5)
-memory usage: 217.8+ KB
-None
-
-Statistical summary of the dataset:
-          v1                      v2  ...             Unnamed: 3 Unnamed: 4
-count   5572                    5572  ...                     12          6
-unique     2                    5169  ...                     10          5
-top      ham  Sorry, I'll call later  ...   MK17 92H. 450Ppw 16"    GNT:-)"
-freq    4825                      30  ...                      2          2
-
-[4 rows x 5 columns]
-
-Missing values in each column:
-v1               0
-v2               0
-Unnamed: 2    5522
-Unnamed: 3    5560
-Unnamed: 4    5566
-dtype: int64
-
-Average message length: 80.11880832735105
-Median message length: 61.0
-Standard deviation of message length: 59.6908407765033
-
-Top 10 words in Spam messages:
- free      224
-txt       163
-ur        144
-mobile    127
-text      125
-stop      121
-claim     113
-reply     104
-www        98
-prize      93
-dtype: int64
-
-Top 10 words in Ham messages:
- gt      318
-lt      316
-just    293
-ok      287
-ll      265
-ur      241
-know    236
-good    233
-got     232
-like    232
-dtype: int64
-
-Correlation between message length and spam/ham:
-                 message_length   is_spam
-message_length        1.000000  0.387285
-is_spam               0.387285  1.000000
-
-
-
-
