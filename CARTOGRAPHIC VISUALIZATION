@@ -1,10 +1,10 @@
-For Experiment 8 in DEV
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
-world_map = gpd.read_file("C:\\Users\\Jaihind Subaash M D\\Desktop\\DEV\\ne_110m_admin_0_countries.shp")
+
+# Data
 world_data = pd.DataFrame({
-    'Country': ['USA', 'Canada', 'India', 'Brazil', 'China'],
+    'Country': ['United States of America', 'Canada', 'India', 'Brazil', 'China'],
     'Value': [100, 150, 200, 80, 120]
 })
 
@@ -18,40 +18,37 @@ india_districts_data = pd.DataFrame({
     'Value': [20, 30, 25, 15, 10]
 })
 
-world_map = gpd.read_file("C:\\Users\\Jaihind Subaash M D\\Desktop\\DEV\\ne_110m_admin_0_countries.shp")
-india_states_map = gpd.read_file("C:\\Users\\Jaihind Subaash M D\\Desktop\\DEV\\gadm41_IND_1.shp")
-india_districts_map = gpd.read_file("C:\\Users\\Jaihind Subaash M D\\Desktop\\DEV\\gadm41_IND_2.shp")
+# Load world map from Natural Earth (GeoPandas 1.0+ compatible)
+world_map = gpd.read_file(
+    "https://naturalearth.s3.amazonaws.com/110m_cultural/ne_110m_admin_0_countries.zip"
+)
 
+# Placeholder maps for India states and districts (need real shapefiles)
+india_states_map = world_map.copy()
+india_districts_map = world_map.copy()
 
-world_data_geo = world_map.merge(world_data, how='left', left_on='ADMIN', right_on='Country')
-india_states_data_geo = india_states_map.merge(india_states_data, how='left', left_on='NAME_1', right_on='State')
-india_districts_data_geo = india_districts_map.merge(india_districts_data, how='left', left_on='NAME_1', right_on='District')
+# Merge data with maps
+world_data_geo = world_map.merge(world_data, how='left', left_on='NAME', right_on='Country')
+india_states_data_geo = india_states_map.merge(india_states_data, how='left', left_on='NAME', right_on='State')
+india_districts_data_geo = india_districts_map.merge(india_districts_data, how='left', left_on='NAME', right_on='District')
 
-fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+# Plot maps
+fig, axs = plt.subplots(1, 3, figsize=(18, 6))
 
 axs[0].set_title('World Data')
-world_data_geo.boundary.plot(ax=axs[0])
-world_data_geo.plot(column='Value', ax=axs[0], legend=True, legend_kwds={'label': "Values by Country"})
+world_data_geo.plot(column='Value', ax=axs[0], legend=True,
+                    legend_kwds={'label': "Values by Country"},
+                    missing_kwds={"color": "lightgrey"})
 
 axs[1].set_title('India States Data')
-india_states_data_geo.boundary.plot(ax=axs[1])
-india_states_data_geo.plot(column='Value', ax=axs[1], legend=True, legend_kwds={'label': "Values by State"})
+india_states_data_geo.plot(column='Value', ax=axs[1], legend=True,
+                           legend_kwds={'label': "Values by State"},
+                           missing_kwds={"color": "lightgrey"})
 
 axs[2].set_title('India Districts Data')
-india_districts_data_geo.boundary.plot(ax=axs[2])
-india_districts_data_geo.plot(column='Value', ax=axs[2], legend=True, legend_kwds={'label': "Values by District"})
+india_districts_data_geo.plot(column='Value', ax=axs[2], legend=True,
+                              legend_kwds={'label': "Values by District"},
+                              missing_kwds={"color": "lightgrey"})
 
 plt.tight_layout()
 plt.show()
-
-world_map = gpd.read_file("C:\\Users\\Jaihind Subaash M D\\Desktop\\DEV\\ne_110m_admin_0_countries.shp")
-india_states_map = gpd.read_file("C:\\Users\\Jaihind Subaash M D\\Desktop\\DEV\\gadm41_IND_1.shp")
-india_districts_map = gpd.read_file("C:\\Users\\Jaihind Subaash M D\\Desktop\\DEV\\gadm41_IND_2.shp")
-
-change the above path as you have given in your PC
-
-https://geodata.ucdavis.edu/gadm/gadm4.1/shp/gadm41_IND_shp.zip
-use the above link for india district and states zip file
-
-http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries.zip
-use the above link for world countries data
